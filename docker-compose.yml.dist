@@ -1,33 +1,39 @@
 version: '3.1'
 
 services:
-
-  wordpress:
-    image: wordpress
-    restart: always
-    ports:
-      - 8080:80
-    environment:
-      WORDPRESS_DB_HOST: db
-      WORDPRESS_DB_USER: exampleuser
-      WORDPRESS_DB_PASSWORD: examplepass
-      WORDPRESS_DB_NAME: exampledb
-    volumes:
-        - ./src/themes:/var/www/html/wp-content/themes
-        - ./src/plugins:/var/www/html/wp-content/plugins
-        - ./src/uploads:/var/www/html/wp-content/uploads
-
-  db:
-    image: mysql:5.7
-    restart: always
-    environment:
-      MYSQL_DATABASE: exampledb
-      MYSQL_USER: exampleuser
-      MYSQL_PASSWORD: examplepass
-      MYSQL_RANDOM_ROOT_PASSWORD: '1'
-    volumes:
-      - db:/var/lib/mysql
+    wordpress_web:
+        container_name: wordpress_web
+        restart: always
+        build:
+            context: ./docker
+            args: 
+                UID: $U_ID
+        ports:
+            - 80:80
+        environment:
+            WORDPRESS_DB_HOST: wordpress_db
+            WORDPRESS_DB_USER: adminuser
+            WORDPRESS_DB_PASSWORD: adminpass
+            WORDPRESS_DB_NAME: wordpress_db_data
+        volumes:
+            - ./src/themes/:/var/www/html/wp-content/themes
+            - ./src/plugins/:/var/www/html/wp-content/plugins
+            - ./src/uploads/:/var/www/html/wp-content/uploads
+    
+    wordpress_db:
+        container_name: wordpress_db
+        image: mysql:8.0
+        restart: always
+        environment:
+            MYSQL_DATABASE: wordpress_db_data
+            MYSQL_USER: adminuser
+            MYSQL_PASSWORD: adminpass
+            MYSQL_ROOT_PASSWORD: root
+            MYSQL_RAMDOM_ROOT_PASSWORD: '1'
+        volumes:
+            - wordpress_db:/var/lib/mysql
 
 volumes:
-  wordpress:
-  db:
+    wordpress_web:
+    wordpress_db:
+
